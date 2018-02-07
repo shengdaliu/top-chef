@@ -4,68 +4,45 @@ var request = require('request');
 var rp = require('request-promise');
 var cheerio = require('cheerio');
 var app = express();
+var jsonfile = require('jsonfile')
 
+var url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin';
 var data = [];
+var file = 'test.json'
+
+var options = {
+    uri: url,
+    transform: function (body) {
+        return cheerio.load(body);
+    }
+};
 
 
-url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin';
-
-// request(url, function (error, response, html) {
-//     if (!error) {
-//         var $ = cheerio.load(html);
-
-//         //console.log($('div[attr-gtm-type="poi"]'));
-
-//         $('div[attr-gtm-type="poi"]').each((index,element) => {
-//             console.log($(element).find('.poi-card-link').attr('href'));
-//             data.push($(element).find('.poi-card-link').attr('href'));
-//         });
-//         //console.log($('div[attr-gtm-type="poi"]')[0].children[1].attribs.href);
-//     }
-// });
-
-// app.get('/scrape', function (req, res) {
-
-//     url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin';
-
-//     request(url, function (error, response, html) {
-//         if (!error) {
-//             var $ = cheerio.load(html);
-
-//             //console.log($('div[attr-gtm-type="poi"]'));
-
-//             [$('div[attr-gtm-type="poi"]')].forEach(element => {
-//                 console.log($(element));
-//             });
-//             //console.log($('div[attr-gtm-type="poi"]')[0].children[1].attribs.href);
-
-//             res.send(response);
-//         }
-
-//         // Finally, we'll just send out a message to the browser reminding you that this app does not have a UI.
-//         //res.send('Check your console!')
-//     });
-// })
-
-function loadRestaurant(url, callback) {
-    var data = [];
-    request(url, function (error, response, html) {
-        if (!error) {
-            var $ = cheerio.load(html);
-
-            //console.log($('div[attr-gtm-type="poi"]'));
-
+for (i = 0; i <= 34; i++) {
+    page = '/page-' + i;
+    options.uri += page;
+    rp(options)
+        .then(function ($) {
             $('div[attr-gtm-type="poi"]').each((index, element) => {
-                //console.log($(element).find('.poi-card-link').attr('href'));
-                data.push($(element).find('.poi-card-link').attr('href'));
+                var obj = {
+                    name: $(element).attr('attr-gtm-title'),
+                    uri: $(element).find('.poi-card-link').attr('href')
+                };
+                data.push(obj);
             });
-            //console.log($('div[attr-gtm-type="poi"]')[0].children[1].attribs.href);
-        }
-    });
-
-    callback && callback(data);
+        })
 }
 
+rp(options).then(function () {
+    jsonfile.writeFile(file, data, {
+        spaces: 2
+    }, function (err) {
+        console.error(err)
+        console.log("The file was saved!");
+    });
+})
+
+// document.querySelectorAll('.resultItem-saleType')[0].textContent
 
 app.listen('8081')
 
