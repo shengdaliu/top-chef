@@ -4,45 +4,61 @@ var request = require('request');
 var rp = require('request-promise');
 var cheerio = require('cheerio');
 var app = express();
-var jsonfile = require('jsonfile')
-
-var url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin';
-var data = [];
-var file = 'test.json'
-
-var options = {
-    uri: url,
-    transform: function (body) {
-        return cheerio.load(body);
-    }
-};
+var jsonfile = require('jsonfile');
+var michelin = require('./michelin');
+var lafourchette = require('./lafourchette');
 
 
-for (i = 0; i <= 34; i++) {
-    page = '/page-' + i;
-    options.uri += page;
-    rp(options)
-        .then(function ($) {
-            $('div[attr-gtm-type="poi"]').each((index, element) => {
-                var obj = {
-                    name: $(element).attr('attr-gtm-title'),
-                    uri: $(element).find('.poi-card-link').attr('href')
-                };
-                data.push(obj);
-            });
-        })
+// michelin.get();
+// var restaurants = require('./test.json');
+// lafourchette.getDeal()
+
+function getLaFourchette() {
+    var urlLaFourchette = 'https://www.lafourchette.com/search-refine/'
+    const data = require('./restaurants.json');
+    var results = [];
+
+    var options = {
+        uri: encodeURI(urlLaFourchette),
+        transform: function (body) {
+            return cheerio.load(body);
+        }
+    };
+
+    data.forEach(element => {
+        options.uri = encodeURI(urlLaFourchette + element.name);
+        rp(options)
+            .then(function ($) {
+                $('#results').find('.resultItem').each((index, element) => {
+                    if ($(element).find('.resultItem-saleType').length >= 1) {
+                        if ($(element).find('.resultItem-saleType').children().text().indexOf('Non réservable sur LaFourchette') === -1 ||
+                            null || '') {
+                            console.log($(element).find('.resultItem-name').children().text());
+                            console.log($(element).find('.resultItem-saleType').children().text());
+                            // var obj = {
+                            //     name: '',
+                            //     offer: $(element).children().text()
+                            // };
+                            // results.push(obj);
+                        }
+                    }
+                });
+            })
+    });
+
+    // rp(options).then(function () {
+    //     jsonfile.writeFile(file, results, {
+    //         spaces: 2
+    //     }, function (err) {
+    //         if(err)
+    //             console.error(err)
+    //         else
+    //             console.log("The file was saved!");
+    //     });
+    // })
 }
 
-rp(options).then(function () {
-    jsonfile.writeFile(file, data, {
-        spaces: 2
-    }, function (err) {
-        console.error(err)
-        console.log("The file was saved!");
-    });
-})
-
-// document.querySelectorAll('.resultItem-saleType')[0].textContent
+getLaFourchette();
 
 app.listen('8081')
 
