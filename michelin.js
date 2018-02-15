@@ -54,7 +54,7 @@ exports.get = function getMichelinRestaurant() {
         console.log('All URIs reached');
         var promises = uris.map(uri => getDescription(uri));
         Promise.all(promises).then(result => {
-            data.push(result);
+            data = result;
             console.log('All promises reached');
         }).then(function () {
             jsonfile.writeFile(file, data, {

@@ -25,19 +25,23 @@ function getLaFourchette() {
         }
     };
 
+    var count = 0;
     data.forEach(restaurant => {
         options.uri = encodeURI(urlLaFourchette + restaurant.name);
+
         rp(options)
             .then(function ($) {
                 $('#results').find('.resultItem').each((index, element) => {
                     if ($(element).find('.resultItem-saleType').length >= 1) {
-                        if ($(element).find('.resultItem-saleType').children().text().indexOf('Non réservable sur LaFourchette') === -1 ||
-                            $(element).find('.resultItem-saleType').children().text() === null ||
+                        if ($(element).find('.resultItem-saleType').children().text().indexOf('Non réservable sur LaFourchette') === -1 &&
+                            $(element).find('.resultItem-saleType').children().text() === null &&
                             $(element).find('.resultItem-saleType').children().text() === '' &&
-                            $(element).find('.resultItem-address').text().indexOf(restaurant.postal) === -1) {
+                            $(element).find('.resultItem-address').text().indexOf(restaurant.postalCode) > 0) {
 
-                            console.log($(element).find('.resultItem-name').children().text());
-                            console.log($(element).find('.resultItem-saleType').children().text());
+                                count++;
+                                console.log(count);
+                            // console.log($(element).find('.resultItem-name').children().text());
+                            // console.log($(element).find('.resultItem-saleType').children().text());
                             // var obj = {
                             //     name: $(element).find('.resultItem-name').children().text(),
                             //     offer: $(element).find('.resultItem-saleType').children().text()
