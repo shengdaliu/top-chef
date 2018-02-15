@@ -11,19 +11,18 @@ function getDescription(uri) {
     };
 
     return new Promise((resolve, reject) => {
+        var obj = {}
         rp(options)
             .then(function ($) {
-                var obj = {
-                    name: $('.poi_intro-display-title').text().substring(7, a.length - 4),
+                obj = {
+                    name: $('.poi_intro-display-title').text().substring(7, $('.poi_intro-display-title').text().length - 4),
                     adress: $('.thoroughfare').first().text(),
                     postalCode: $('.postal-code').first().text(),
                     city: $('.locality').first().text(),
                     uri: uri
                 };
-                console.log(obj);
                 return resolve(obj);
-            })
-            .catch(error => resolve(error));
+            }).catch(error => resolve(error));
     });
 }
 
@@ -54,10 +53,9 @@ exports.get = function getMichelinRestaurant() {
     rp(options).then(function () {
         console.log('All URIs reached');
         var promises = uris.map(uri => getDescription(uri));
-
         Promise.all(promises).then(result => {
             data.push(result);
-            console.log('All promise reached');
+            console.log('All promises reached');
         }).then(function () {
             jsonfile.writeFile(file, data, {
                 spaces: 2
