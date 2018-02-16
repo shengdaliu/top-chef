@@ -5,6 +5,8 @@ var jsonfile = require('jsonfile');
 function getDescription(uri) {
     var options = {
         uri: uri,
+        timeout: 600000, // 10 min.
+        resolveWithFullResponse: true,
         transform: function (body) {
             return cheerio.load(body);
         }

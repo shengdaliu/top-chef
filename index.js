@@ -10,8 +10,8 @@ var lafourchette = require('./lafourchette');
 
 
 // michelin.get();
-// var restaurants = require('./restaurants.json');
-// lafourchette.getDeal()
+var restaurants = require('./restaurants.json');
+lafourchette.getDeal()
 
 function getLaFourchette() {
     var urlLaFourchette = 'https://www.lafourchette.com/search-refine/'
@@ -20,6 +20,8 @@ function getLaFourchette() {
 
     var options = {
         uri: encodeURI(urlLaFourchette),
+        timeout: 600000, // 10 min.
+        resolveWithFullResponse: true,
         transform: function (body) {
             return cheerio.load(body);
         }
@@ -38,8 +40,11 @@ function getLaFourchette() {
                             $(element).find('.resultItem-saleType').children().text() === '' &&
                             $(element).find('.resultItem-address').text().indexOf(restaurant.postalCode) > 0) {
 
-                                count++;
-                                console.log(count);
+                                console.log($(element).find('.resultItem-address').text());
+                                console.log(restaurant.postalCode);
+
+                                // count++;
+                                // console.log(count);
                             // console.log($(element).find('.resultItem-name').children().text());
                             // console.log($(element).find('.resultItem-saleType').children().text());
                             // var obj = {
