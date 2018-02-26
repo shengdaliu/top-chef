@@ -7,42 +7,11 @@ var stringSimilarity = require('string-similarity');
 var michelin = require('./michelin');
 
 function getUrl(name, postalCode, callback) {
-    // var options = {
-    //     uri: 'https://www.lafourchette.com/search-refine/' + encodeURIComponent(name),
-    //     headers: {
-    //         'cookie': 'datadome=AHrlqAAAAAMAA8XUpNbGsMYALtotww=='
-    //     },
-    //     timeout: 300000, // 5 min.
-    //     resolveWithFullResponse: true,
-    //     transform: function (body) {
-    //         return cheerio.load(body);
-    //     }
-    // };
-    // var similarity = 0.60;
-    // var restaurantUrl = '';
-    // rp(options)
-    //     .then(function ($) {
-    //         if ($('.resultContainer').children().children() !== undefined) {
-    //             $('.resultContainer').children().children().each(function (i, elem) {
-    //                 var resultAddr = $(elem).find('.resultItem-address').text().trim();
-    //                 console.log(resultAddr);
-    //                 var currentRestaurantURL = $(elem).find('.resultItem-name').children().attr('href');
-    //                 if (stringSimilarity.compareTwoStrings(resultAddr, address) > similarity) {
-    //                     similarity = stringSimilarity.compareTwoStrings(resultAddr, address);
-    //                     restaurantUrl = 'https://www.lafourchette.com' + currentRestaurantURL;
-    //                 }
-    //             }).then(() => {
-    //                 callback(restaurantUrl);
-    //             });
-    //         }
-    //     });
-
     var options = {
         uri: "https://m.lafourchette.com/api/restaurant-prediction?name=" + encodeURIComponent(name),
         timeout: 600000, // 10 min.
         resolveWithFullResponse: true,
         transform: function (body) {
-            // return cheerio.load(body);
             return body;
         }
     };
@@ -60,11 +29,33 @@ function getUrl(name, postalCode, callback) {
         });
 }
 
+function getSale(url, callback) {
+    var specialOffers = [];
+    var options = {
+        uri: url + '/sale-type',
+        timeout: 600000, // 10 min.
+        resolveWithFullResponse: true,
+        transform: function (body) {
+            return body;
+        }
+    };
+    rp(options)
+        .then(function (data) {
+            JSON.parse(data).forEach(result => {
+                if (result.is_special_offer === true) {
+                    specialOffers.push(result.title);
+                }
+            })
+        })
+        .then(function () {
+            callback(specialOffers)
+        });
+}
+
 function storeUrl() {
     // var json = michelin.get();
     var json = require('./restaurants1.json');
     var urls = [];
-    console.log(json.length);
     json.forEach(restaurant => {
         getUrl(restaurant.name, restaurant.postalCode, function (url) {
             urls.push({
@@ -72,7 +63,7 @@ function storeUrl() {
                 "adress": restaurant.thoroughfare + ' ' + restaurant.postalCode + ' ' + restaurant.city,
                 "chef": restaurant.chef,
                 "star": restaurant.star,
-                'url': url,
+                "url": url,
             });
             fs.writeFile('lafourchette.json', JSON.stringify(urls), 'utf8', function (err) {
                 if (!err) {
@@ -85,28 +76,33 @@ function storeUrl() {
     });
 }
 
-// function getDeal(restaurants) {
-//     var urlLaFourchette = 'https://www.lafourchette.com/search-refine/'
+function getAllSales() {
+    var json = require('./lafourchette.json');
+    var data = [];
+    json.forEach(restaurant => {
+        getSale(restaurant.url, function (specialOffers) {
+            if (specialOffers[0] !== undefined) {
+                data.push({
+                    "name": restaurant.name,
+                    "adress": restaurant.address,
+                    "chef": restaurant.chef,
+                    "star": restaurant.star,
+                    "url": restaurant.url,
+                    "specialOffers": specialOffers
+                });
+            }
 
-//     var options = {
-//         uri: encodeURI(urlLaFourchette),
-//         transform: function (body) {
-//             return cheerio.load(body);
-//         }
-//     };
-
-//     restaurants.forEach(element => {
-//         options.url = encodeURI(urlLaFourchette + element.name);
-
-//         rp(options)
-//             .then(function ($) {
-//                 $('#results').find('.resultItem-saleType').each((index, element) => {
-//                     console.log($(element).children().first().text());
-//                 });
-//             })
-//     });
-// }
+            fs.writeFile('results.json', JSON.stringify(data), 'utf8', function (err) {
+                if (!err) {
+                    // console.log('URL has been added.');
+                } else {
+                    return console.log(err);
+                }
+            });
+        });
+    });
+}
 
 exports.getUrl = getUrl;
 exports.storeUrl = storeUrl;
-// exports.getDeal = getDeal;
+exports.getAllSales = getAllSales;
