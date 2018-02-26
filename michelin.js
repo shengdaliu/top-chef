@@ -16,19 +16,34 @@ function getDescription(uri) {
         var obj = {}
         rp(options)
             .then(function ($) {
+                var name = $('h1').first().text(); // $('.poi_intro-display-title').text().substring(7, $('.poi_intro-display-title').text().length - 4),
+                var thoroughfare = $('.thoroughfare').first().text();
+                var postalCode = $('.postal-code').first().text();;
+                var city = $('.locality').first().text();
+                var chef = $('.field--name-field-chef').children('.field__items').text();
+                var star = 1;
+                if ($('span').hasClass('icon-cotation2etoiles')) {
+                    star = 2;
+                }
+                if ($('span').hasClass('icon-cotation3etoiles')) {
+                    star = 3;
+                }
+
                 obj = {
-                    name: $('.poi_intro-display-title').text().substring(7, $('.poi_intro-display-title').text().length - 4),
-                    adress: $('.thoroughfare').first().text(),
-                    postalCode: $('.postal-code').first().text(),
-                    city: $('.locality').first().text(),
-                    uri: uri
+                    name: name,
+                    thoroughfare: thoroughfare,
+                    postalCode: postalCode,
+                    city: city,
+                    uri: uri,
+                    chef: chef,
+                    star: star
                 };
                 return resolve(obj);
             }).catch(error => resolve(error));
     });
 }
 
-exports.get = function getMichelinRestaurant() {
+function getMichelinRestaurant() {
     var url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin';
     var file = 'restaurants.json'
     var uris = [];
@@ -36,6 +51,8 @@ exports.get = function getMichelinRestaurant() {
 
     var options = {
         uri: url,
+        timeout: 600000, // 10 min.
+        resolveWithFullResponse: true,
         transform: function (body) {
             return cheerio.load(body);
         }
@@ -54,6 +71,7 @@ exports.get = function getMichelinRestaurant() {
 
     rp(options).then(function () {
         console.log('All URIs reached');
+        console.log(uris.length);
         var promises = uris.map(uri => getDescription(uri));
         Promise.all(promises).then(result => {
             data = result;
@@ -70,3 +88,5 @@ exports.get = function getMichelinRestaurant() {
         })
     })
 }
+
+exports.get = getMichelinRestaurant;
