@@ -1,0 +1,25 @@
+[{
+    "name": "Le Violon d'Ingres",
+    "chef": "Christian Constant",
+    "star": 1,
+    "url": "https://m.lafourchette.com/api/restaurant/205737",
+    "specialOffers": ["Menu \"Prestige\""]
+}, {
+    "name": "Le Restaurant",
+    "chef": "Julien Montbabut",
+    "star": 1,
+    "url": "https://m.lafourchette.com/api/restaurant/297223",
+    "specialOffers": ["-30% off the \"à la carte\" menu!"]
+}, {
+    "name": "Le Chiberta",
+    "chef": "Stéphane Laruelle",
+    "star": 1,
+    "url": "https://m.lafourchette.com/api/restaurant/2828",
+    "specialOffers": ["Menu Découverte 110€"]
+}, {
+    "name": "Dominique Bouchet",
+    "chef": "Dominique Bouchet",
+    "star": 1,
+    "url": "https://m.lafourchette.com/api/restaurant/310829",
+    "specialOffers": ["-20% on « MENU AVEC SAKE », or 120,00 € instead of 150,00 €!"]
+}]

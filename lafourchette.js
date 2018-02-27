@@ -6,6 +6,10 @@ var jsonfile = require('jsonfile');
 var stringSimilarity = require('string-similarity');
 var michelin = require('./michelin');
 
+var michelin_data = './data/restaurants.json';
+var lafourchette_data = './data/lafourchette.json';
+var results_data = './data/results.json';
+
 function getUrl(name, postalCode, callback) {
     var options = {
         uri: "https://m.lafourchette.com/api/restaurant-prediction?name=" + encodeURIComponent(name),
@@ -27,6 +31,30 @@ function getUrl(name, postalCode, callback) {
                 })
             }
         });
+}
+
+function storeUrl() {
+    // var json = michelin.get();
+    var json = require(michelin_data);
+    var urls = [];
+    json.forEach(restaurant => {
+        getUrl(restaurant.name, restaurant.postalCode, function (url) {
+            urls.push({
+                "name": restaurant.name,
+                "adress": restaurant.thoroughfare + ' ' + restaurant.postalCode + ' ' + restaurant.city,
+                "chef": restaurant.chef,
+                "star": restaurant.star,
+                "url": url,
+            });
+            fs.writeFile(lafourchette_data, JSON.stringify(urls), 'utf8', function (err) {
+                if (!err) {
+                    // console.log('URL has been added.');
+                } else {
+                    return console.log(err);
+                }
+            });
+        });
+    });
 }
 
 function getSale(url, callback) {
@@ -52,32 +80,8 @@ function getSale(url, callback) {
         });
 }
 
-function storeUrl() {
-    // var json = michelin.get();
-    var json = require('./restaurants1.json');
-    var urls = [];
-    json.forEach(restaurant => {
-        getUrl(restaurant.name, restaurant.postalCode, function (url) {
-            urls.push({
-                "name": restaurant.name,
-                "adress": restaurant.thoroughfare + ' ' + restaurant.postalCode + ' ' + restaurant.city,
-                "chef": restaurant.chef,
-                "star": restaurant.star,
-                "url": url,
-            });
-            fs.writeFile('lafourchette.json', JSON.stringify(urls), 'utf8', function (err) {
-                if (!err) {
-                    // console.log('URL has been added.');
-                } else {
-                    return console.log(err);
-                }
-            });
-        });
-    });
-}
-
 function getAllSales() {
-    var json = require('./lafourchette.json');
+    var json = require(lafourchette_data);
     var data = [];
     json.forEach(restaurant => {
         getSale(restaurant.url, function (specialOffers) {
@@ -92,7 +96,7 @@ function getAllSales() {
                 });
             }
 
-            fs.writeFile('results.json', JSON.stringify(data), 'utf8', function (err) {
+            fs.writeFile(results_data, JSON.stringify(data), 'utf8', function (err) {
                 if (!err) {
                     // console.log('URL has been added.');
                 } else {
