@@ -46,6 +46,7 @@ function getMichelinRestaurant() {
 
     var options = {
         uri: url,
+        headers: { Connection: 'keep-alive' },
         timeout: 600000, // 10 min.
         resolveWithFullResponse: true,
         transform: function (body) {
@@ -77,8 +78,13 @@ function getMichelinRestaurant() {
                 if (err)
                     console.error(err)
                 else
+                {
                     console.log("The file was saved!");
-            });
+                    return new Promise(resolve => {
+                        resolve();
+                    })
+                }
+            })
         })
     })
 }

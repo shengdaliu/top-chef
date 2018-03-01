@@ -5,6 +5,7 @@ var cheerio = require('cheerio');
 var jsonfile = require('jsonfile');
 var stringSimilarity = require('string-similarity');
 var michelin = require('./michelin');
+var Promise = require('bluebird');
 
 var michelin_data = './data/restaurants.json';
 var lafourchette_data = './data/lafourchette.json';
@@ -34,7 +35,6 @@ function getUrl(name, postalCode, callback) {
 }
 
 function storeUrl() {
-    // var json = michelin.get();
     var json = require(michelin_data);
     var urls = [];
     json.forEach(restaurant => {
